@@ -4,7 +4,8 @@
         Scara = New RCAPINet.Spel
         With Scara
             .Initialize()
-            .Project = "c:\EpsonRC70\projects\API_Demos\Demo1 \demo1.sprj"
+            .Project = "C:\EpsonRC70\projects\VBCONTORL\VBCONTORL.sprj"
+            .TLSet(1, -16.01, -0.303, 0, 0, 0, 0)
         End With
     End Sub
 
