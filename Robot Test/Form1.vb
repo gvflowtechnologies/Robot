@@ -5,6 +5,14 @@ Public Class Form1
     Const scalepoint As Integer = 10
     Const goodpoint1 As Integer = 11
     Const badpoint1 As Integer = 12
+    Dim Back1() As Single = {187.804, -40.051, -111.231, -262.7}
+    Dim Front1() As Single = {260.733, 302.082, -111.144, -148.46}
+    Public Inside1() As Single = {57.937, 184.83, -111.334, -178.046}
+    Public Outside1() As Single = {391.447, 76.419, -110.722, -185.602}
+    Public rows As Integer = 20
+    Public columns As Integer = 20
+    Dim startx As Single
+    Dim starty As Single
 
     Private Sub Form1_FormClosed(sender As Object, e As FormClosedEventArgs) Handles Me.FormClosed
         Scara.Dispose()
@@ -44,18 +52,18 @@ Public Class Form1
         Btn_Continue.Enabled = False
 
         Scara.SetPoint(1, -2.1, 268.4, -70, -175, 0, RCAPINet.SpelHand.Lefty)
+        Dim r As Integer
+        Dim c As Integer
 
         Dim count As Integer
-        For row = 1 To 20
-            For column As= 1 to 20
+        For r = 0 To 
+            For c = 1 To 20
+
 
                 Scara.SetPoint(2, xcord, ycord, zcord, -181.0, 0, RCAPINet.SpelHand.Lefty)
-                Scara.Jump(pallet(1, 1))
-                Scara.Jump(scalepoint)
-                count += 1
 
-                xcord = xcord + 25
-                ycord = ycord + 25
+                Scara.Jump(scalepoint)
+
 
             Next
         Next
