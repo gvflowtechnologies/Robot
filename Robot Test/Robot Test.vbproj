@@ -62,7 +62,7 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>8E70CA40EB485BEBB4B894B4EA9A54D143E6773E</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>C619FDA6AD2EFFC69B65C629F57BF6679046263E</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>Robot Test_TemporaryKey.pfx</ManifestKeyFile>
