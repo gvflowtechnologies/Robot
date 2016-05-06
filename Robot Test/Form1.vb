@@ -3,6 +3,12 @@ Imports System.Threading
 
 Public Class Form1
 
+    Public Enum TipState
+        Off = 0
+        BlowOff = 1
+        Vacuum = 2
+    End Enum
+
     Const scalepoint As Integer = 10
     Const goodpoint1 As Integer = 11
     Const badpoint1 As Integer = 12
@@ -17,6 +23,8 @@ Public Class Form1
     Dim starty As Single
     Dim PauseRequest As Boolean
     Dim ResumeMotion As Boolean
+    Dim tmr_Timeout As Stopwatch
+    Dim vacuumtip As TipState
 
     Private Sub Form1_FormClosed(sender As Object, e As FormClosedEventArgs) Handles Me.FormClosed
         Scara.Stop()
@@ -34,8 +42,9 @@ Public Class Form1
             Scara.MotorsOn = True
         End If
         Scara.SetPoint(scalepoint, -2.1, 268.4, -100, 0, 0, RCAPINet.SpelHand.Lefty)
-        Scara.SetPoint(pausepoint, 100, 100, -70, 0, 0, RCAPINet.SpelHand.Righty)
-
+        Scara.SetPoint(pausepoint, 100, 100, -70, 0, 0, RCAPINet.SpelHand.Lefty)
+        tmr_Timeout = New Stopwatch
+        tmr_Timeout.Start()
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
@@ -77,7 +86,7 @@ Public Class Form1
 
         xcord = Back1(0)
         ycord = Back1(1)
-        zcord = Back1(2) + 5
+        zcord = Back1(2) + 0
         Dim ucord As Single
 
         Scara.SetPoint(1, xcord, ycord, zcord, -175, 0, RCAPINet.SpelHand.Lefty)
@@ -93,36 +102,95 @@ Public Class Form1
                 xcord = Back1(0) - c * xinc1 - r * xinc2
                 ycord = Back1(1) - c * yinc1 - r * yinc2
 
-
-
-                '   Scara.SetPoint(1, xcord, ycord, zcord, ucord, 0, RCAPINet.SpelHand.Lefty)
-
-                ' Scara.SetPoint(2, xcord, ycord, zcord, -181.0, 0, RCAPINet.SpelHand.Lefty)
-
-                '        If Scara.In(1) = 0 Then
-
-                'Scara.Jump(1)
+                ' Go to pallet cordinate and spit canister out.
                 ' Spit out one
-                Scara.SetPoint(1, xcord, ycord, zcord + 10, ucord, 0, RCAPINet.SpelHand.Lefty)
+
+                Scara.SetPoint(1, xcord, ycord, zcord + 15, ucord, 0, RCAPINet.SpelHand.Lefty)
                 Scara.Jump(1)
                 Scara.Out(1, 1)
-                Scara.Delay(1000)
+                ' Wait until spit out
+                Do Until Scara.In(2) = 1
+
+                    Application.DoEvents()
+                    Thread.Sleep(1)
+
+                Loop
+                vacuumtip = TipState.Off
+                Scara.Out(1, vacuumtip)
+
+
                 If PauseRequest = True Then Controlled_Pause()
+
                 ' Pick up one
-                Scara.SetPoint(1, xcord, ycord, zcord, ucord, 0, RCAPINet.SpelHand.Lefty)
+                Scara.SetPoint(1, xcord, ycord, zcord + 8, ucord, 0, RCAPINet.SpelHand.Lefty)
 
                 Scara.Jump(1)
                 Scara.Out(1, 2)
-                Scara.Delay(250)
+                tmr_Timeout.Restart() ' Reset timer to zero to prevent to long of a time 
+
+                Do Until Scara.In(2) = 0
+
+                    Select Case tmr_Timeout.ElapsedMilliseconds
+                        Case 250 To 500
+                            Scara.SetPoint(1, xcord, ycord, zcord + 6, ucord, 0, RCAPINet.SpelHand.Lefty)
+                            Scara.Jump(1)
+                        Case 501 To 750
+                            Scara.SetPoint(1, xcord, ycord, zcord + 4, ucord, 0, RCAPINet.SpelHand.Lefty)
+                            Scara.Jump(1)
+                        Case 751 To 1000
+                            Scara.SetPoint(1, xcord, ycord, zcord + 2, ucord, 0, RCAPINet.SpelHand.Lefty)
+                            Scara.Jump(1)
+                        Case Is > 1000
+                            Exit Do
+                    End Select
+
+                    Application.DoEvents()
+                    Thread.Sleep(1)
+
+                Loop
+
 
                 If PauseRequest = True Then Controlled_Pause()
 
+                Scara.SetPoint(scalepoint, -2.1, 268.4, -98, 0, 0, RCAPINet.SpelHand.Lefty)
                 Scara.Jump(scalepoint)
-                'Scara.Out(1, 1)
-                'Scara.Delay(250)
-                'Scara.Out(1, 2)
-                'Scara.Delay(250)
+                Scara.Out(1, 1)
+
+                tmr_Timeout.Restart()
+
+                Do Until Scara.In(2) = 1
+                    If tmr_Timeout.ElapsedMilliseconds > 1000 Then Exit Do
+
+                    Application.DoEvents()
+                    Thread.Sleep(1)
+                Loop
+                Scara.Out(1, 0)
+
+                tmr_Timeout.Restart()
+                Do Until Scara.In(2) = 0
+                    If PauseRequest = True Then Controlled_Pause()
+                    Select Case tmr_Timeout.ElapsedMilliseconds
+                        Case 250 To 500
+                            Scara.SetPoint(scalepoint, -2.1, 268.4, -100, 0, 0, RCAPINet.SpelHand.Lefty)
+                            Scara.Jump(scalepoint)
+                        Case 501 To 750
+                            Scara.SetPoint(scalepoint, -2.1, 268.4, -102, 0, 0, RCAPINet.SpelHand.Lefty)
+                            Scara.Jump(scalepoint)
+                        Case 751 To 1000
+                            Scara.SetPoint(scalepoint, -2.1, 268.4, -104, 0, 0, RCAPINet.SpelHand.Lefty)
+                            Scara.Jump(scalepoint)
+                        Case Is > 1000
+                            Exit Do
+                    End Select
+ 
+                    Application.DoEvents()
+                    Thread.Sleep(1)
+
+                Loop
+
+
                 If PauseRequest = True Then Controlled_Pause()
+
             Next
 
         Next
