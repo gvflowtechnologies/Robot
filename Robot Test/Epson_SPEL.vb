@@ -19,8 +19,8 @@ Module Epson_SPEL
         With Scara
             .Initialize()
             .Project = "C:\EpsonRC70\Projects\vbcontorl\vbcontorl.sprj"
-            .TLSet(1, -16.01, -0.303, 0, 0, 0, 0)
-
+            .TLSet(1, -16.006, -0.568, 0, 0, 0, 0)
+            .LimZ(-10)
         End With
 
         ' pointpallet01 = Scara.GetPoint(1)
